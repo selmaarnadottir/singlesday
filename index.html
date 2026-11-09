@@ -213,7 +213,7 @@ h1{font-family:var(--f-display);font-size:22px;font-weight:700;margin:0;letter-s
       <div class="chart" id="days"></div>
     </div>
     <div class="panel s8">
-      <h2>Hvenær er keypt · sala eftir klukkutíma</h2>
+      <h2>Hvenær er keypt · sala eftir klukkutíma, án heildsölu</h2>
       <div class="chart hscroll" id="heat"></div>
     </div>
     <div class="panel s4">
@@ -288,13 +288,13 @@ function renderHero(){
   $("goalL").innerHTML = a>=pFull && pFull>0 ? `<b style="color:var(--good)">2025 slegið með ${kr(a-pFull)} kr.</b>` : `Vantar <b class="num" style="color:var(--ink)">${kr(Math.max(0,pFull-a))} kr.</b> til að slá 2025`;
   $("goalR").innerHTML=`2025 í heild: <span class="num">${kr(pFull)} kr.</span> · strik = 2025 á sama tíma`;
   const n=tot(L,ds,cs,"n"), n25=tot(Y25,ds,cs,"n");
-  let best=null; if(L) for(const i of ds) for(let h=0;h<24;h++){ let v=0; for(const c of cs) v+=L.ch[c].h[i][h]||0; if(!best||v>best.v) best={v,i,h}; }
+  const rs=cs.filter(c=>c!=="heildsala").length?cs.filter(c=>c!=="heildsala"):cs; let best=null; if(L) for(const i of ds) for(let h=0;h<24;h++){ let v=0; for(const c of rs) v+=L.ch[c].h[i][h]||0; if(!best||v>best.v) best={v,i,h}; }
   const k=(l,v,d)=>`<div class="kpi"><div class="l">${l}</div><div class="v num">${v}</div><div class="muted num">${d}</div></div>`;
   $("kpis").innerHTML =
     k("Fjöldi sala", L?nf.format(n):"–", `2025 alls: ${nf.format(n25)}`)+
     k("Meðalsala", L&&n?kr(a/n)+" kr.":"–", `2025: ${n25?kr(pFull/n25):"–"} kr.`)+
     k("Hlutfall af 2025", L&&pFull?Math.round(100*a/pFull)+" %":"–", `af ${short(pFull)} kr. heild`)+
-    k("Besti klukkutíminn", best&&best.v>0?`${String(best.h).padStart(2,"0")}–${String(best.h+1).padStart(2,"0")}`:"–", best&&best.v>0?`${WD26[best.i]} ${DAYN[best.i]}. · ${kr(best.v)} kr.`:"");
+    k(rs.length<cs.length?"Besti klukkutíminn · án heildsölu":"Besti klukkutíminn", best&&best.v>0?`${String(best.h).padStart(2,"0")}–${String(best.h+1).padStart(2,"0")}`:"–", best&&best.v>0?`${WD26[best.i]} ${DAYN[best.i]}. · ${kr(best.v)} kr.`:"");
 }
 
 /* ---------- channel tiles ---------- */
@@ -358,7 +358,7 @@ function renderDays(){
 }
 
 function renderHeat(){
-  const el=$("heat"), ds=days(), cs=chs(); let max=1; const cell=(D,i,h)=>D?cs.reduce((t,c)=>t+Math.max(0,D.ch[c].h[i][h]||0),0):0;
+  const el=$("heat"), ds=days(), cs=chs().filter(c=>c!=="heildsala").length?chs().filter(c=>c!=="heildsala"):chs(); let max=1; const cell=(D,i,h)=>D?cs.reduce((t,c)=>t+Math.max(0,D.ch[c].h[i][h]||0),0):0;
   for(const D of [Y25,L]) if(D) for(const i of ds) for(let h=0;h<24;h++) max=Math.max(max,cell(D,i,h));
   let s=`<div class="heat"><span></span>`+Array.from({length:24},(_,h)=>`<span class="hh">${h%3===0?String(h).padStart(2,"0"):""}</span>`).join("");
   for(const [D,yr,wd] of [[L,2026,WD26],[Y25,2025,WD25]]){ s+=`<div class="yr">${yr}</div>`;
